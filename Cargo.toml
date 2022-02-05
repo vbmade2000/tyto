@@ -9,3 +9,4 @@ authors = ["Malhar Vora <malhar.vora@openanalytics.eu>"]
 actix-web="3.3.3"
 md5="0.7.0"
 serde = "1.0.136"
+toml="0.5.8"

@@ -1,3 +1,4 @@
+use crate::config::Config;
 use std::collections::HashMap;
 use std::sync::Mutex;
 
@@ -13,9 +14,4 @@ impl State {
             urls: Mutex::default(),
         }
     }
-}
-
-#[derive(Clone, Debug)]
-pub struct Config {
-    pub filename: String,
 }
