@@ -1,0 +1,82 @@
+=> Table: users
+-- public.users definition
+
+-- Drop table
+
+-- DROP TABLE public.users;
+
+CREATE TABLE public.users (
+	id serial NOT NULL,
+	apikey varchar(255) NULL,
+	banned bool NOT NULL DEFAULT false,
+	email varchar(255) NOT NULL,
+	"password" varchar(255) NOT NULL,
+	reset_password_expires timestamptz NULL,
+	reset_password_token varchar(255) NULL,
+	created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT users_email_unique UNIQUE (email),
+	CONSTRAINT users_pkey PRIMARY KEY (id),
+);
+
+=> Table: links
+CREATE TABLE public.links (
+	id serial NOT NULL,
+	address varchar(255) NOT NULL, // Shortened URL part. Like XXXX in localhost"3000/XXXX
+	description varchar(255) NULL,
+	banned bool NOT NULL DEFAULT false,
+	target varchar(2040) NOT NULL, // Which URL it will open. Like localhost"3000/XXXX opens www.linkedin.com/users/vbmade2000/ksvdjskdvj
+	user_id int4 NULL,
+	visit_count int4 NOT NULL DEFAULT 0,
+	created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT links_pkey PRIMARY KEY (id)
+);
+
+=> Table: visits
+-- public.visits definition
+
+-- Drop table
+
+-- DROP TABLE public.visits;
+
+CREATE TABLE public.visits (
+	id serial NOT NULL,
+	countries jsonb NULL DEFAULT '{}'::jsonb,
+	created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NULL DEFAULT CURRENT_TIMESTAMP,
+	link_id int4 NOT NULL,
+	referrers jsonb NULL DEFAULT '{}'::jsonb,
+	total int4 NOT NULL DEFAULT 0,
+	br_chrome int4 NOT NULL DEFAULT 0,
+	br_edge int4 NOT NULL DEFAULT 0,
+	br_firefox int4 NOT NULL DEFAULT 0,
+	br_ie int4 NOT NULL DEFAULT 0,
+	br_opera int4 NOT NULL DEFAULT 0,
+	br_other int4 NOT NULL DEFAULT 0,
+	br_safari int4 NOT NULL DEFAULT 0,
+	os_android int4 NOT NULL DEFAULT 0,
+	os_ios int4 NOT NULL DEFAULT 0,
+	os_linux int4 NOT NULL DEFAULT 0,
+	os_macos int4 NOT NULL DEFAULT 0,
+	os_other int4 NOT NULL DEFAULT 0,
+	os_windows int4 NOT NULL DEFAULT 0,
+	CONSTRAINT visits_pkey PRIMARY KEY (id)
+);
+
+=> Table: ips
+-- public.ips definition
+
+-- Drop table
+
+-- DROP TABLE public.ips;
+
+CREATE TABLE public.ips (
+	id serial NOT NULL,
+	ip varchar(255) NOT NULL,
+	created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT ips_ip_unique UNIQUE (ip),
+	CONSTRAINT ips_pkey PRIMARY KEY (id)
+);
+
