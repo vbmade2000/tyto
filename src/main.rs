@@ -1,9 +1,11 @@
 // use crate::endpoints;
 use crate::config::Config;
 use actix_web::{web, App, HttpResponse, HttpServer};
-use std::{fs, path::Path};
+use sqlx::{self, postgres::PgPoolOptions, Pool, Postgres};
+use std::{fs, path::Path, time::Duration};
 
 mod config;
+mod db;
 mod endpoints;
 mod state;
 
@@ -13,7 +15,18 @@ async fn main() -> std::io::Result<()> {
     let config_file_path = Path::new("./config.toml");
     let cfg = read_config(config_file_path).await;
 
-    let shared_state = web::Data::new(state::State::new(cfg.clone()));
+    let db_connection_string = db::get_db_conn_string(cfg.clone()).await;
+
+    // Database migration
+    let db_connection = db::get_database_connection(db_connection_string)
+        .await
+        .unwrap();
+    sqlx::migrate!("./migrations")
+        .run(&db_connection)
+        .await
+        .unwrap();
+
+    let shared_state = web::Data::new(state::State::new(cfg.clone(), db_connection));
 
     let ip_port = format!("{}:{}", cfg.ip, cfg.port);
     println!("Starting server at: {}", ip_port);

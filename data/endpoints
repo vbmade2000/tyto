@@ -1,0 +1,40 @@
+=> Commons
+/<shorturl>
+
+=> URLS
+1. /api/v1/urls - GET - Get all URLs
+2. /api/v1/urls/{id} - GET - Get URL with <id>
+3. /api/v1/urls/{id} - DELETE - Delete URL with <id>
+4. /api/v1/urls/{id} - PATCH - Update target part of URL with <id>
+5. /api/v1/urls - POST - Create new shortened URL
+
+Tools to be used:
+1. sqlx for ORM
+2. sqlx-cli for Database migration - Done (Tried but some issues)
+
+
+Tasks:
+1. Use anyhow for error management
+2. Use sqlx to save data in Postgresql database
+
+
+Reference REST APIs:
+https://docs.github.com/en/rest/reference/users#get-a-user
+1. https://api.github.com/organizations
+2. https://api.github.com/users/vbmade2000
+3. https://api.github.com/user - For authentication purpose
+
+
+Other references:
+1. https://restcookbook.com/Miscellaneous/richardsonmaturitymodel/
+2. https://docs.microsoft.com/en-us/azure/architecture/best-practices/api-design
+
+
+Common response structure:
+{
+    "status": "success|failure",
+    "message": "<error message>"
+    "data": {
+
+    }
+}
