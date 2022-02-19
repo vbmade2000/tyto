@@ -11,3 +11,4 @@ md5="0.7.0"
 serde = "1.0.136"
 toml="0.5.8"
 sqlx = { version = "0.5", features = [ "runtime-tokio-native-tls" , "postgres", "json" ] }
+snafu = "0.7.0"

@@ -7,7 +7,9 @@ use std::{fs, path::Path, time::Duration};
 mod config;
 mod db;
 mod endpoints;
+mod error;
 mod state;
+mod types;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

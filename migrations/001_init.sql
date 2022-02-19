@@ -9,5 +9,6 @@ CREATE TABLE IF NOT EXISTS tyto.links (
 	visit_count int4 NOT NULL DEFAULT 0,
 	created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	CONSTRAINT links_pkey PRIMARY KEY (id)
+	CONSTRAINT links_pkey PRIMARY KEY (id),
+	CONSTRAINT address_unique UNIQUE(address)
 );
