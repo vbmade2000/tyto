@@ -1,8 +1,8 @@
 // use crate::endpoints;
 use crate::config::Config;
 use actix_web::{web, App, HttpResponse, HttpServer};
-use sqlx::{self, postgres::PgPoolOptions, Pool, Postgres};
-use std::{fs, path::Path, time::Duration};
+use sqlx::{self};
+use std::{fs, path::Path};
 
 mod config;
 mod db;
@@ -52,9 +52,11 @@ async fn main() -> std::io::Result<()> {
 /// Reads configuration file and returns an instance of [Config] struct
 async fn read_config<P: AsRef<Path>>(config_file_path: P) -> Config {
     // TODO: Handle error properly
-    let toml_data = fs::read_to_string(config_file_path).unwrap();
+    let toml_data = fs::read_to_string(config_file_path)
+        .expect("Error in reading configuration from {config_file_path}");
 
     // TODO: Handle error properly
-    let config = toml::from_str(&toml_data).unwrap();
+    let config = toml::from_str::<Config>(&toml_data)
+        .expect("Error in parsing configuration file {config_file_path}");
     config
 }

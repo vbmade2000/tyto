@@ -1,7 +1,8 @@
 use std::time::Duration;
 
 use crate::config;
-use sqlx::{self, postgres::PgPoolOptions, Error, Pool, Postgres};
+use crate::error::Error;
+use sqlx::{self, postgres::PgPoolOptions, Pool, Postgres};
 
 /// Returns database connection strings using parameters received from config
 pub async fn get_db_conn_string(cfg: config::Config) -> String {
@@ -19,8 +20,6 @@ pub async fn get_db_conn_string(cfg: config::Config) -> String {
             cfg.db_user, cfg.db_host, cfg.db_port, cfg.db_name
         )
     }
-    // let database_url = format!("{}");
-    // "Hello".to_owned()
 }
 
 pub async fn get_database_connection(conn_string: String) -> Result<Pool<Postgres>, Error> {

@@ -9,6 +9,6 @@ pub enum Status {
 #[derive(Serialize)]
 pub struct Response {
     pub status: Status,
-    pub message: String,
+    pub message: Option<String>,
     pub data: Option<String>,
 }

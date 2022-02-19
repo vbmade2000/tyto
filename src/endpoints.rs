@@ -1,7 +1,9 @@
 use crate::error::Error;
 use crate::state::State;
-use actix_web::{http, web::Path};
-use actix_web::{web, Responder};
+use crate::types;
+use actix_web::http::StatusCode;
+use actix_web::web::Path;
+use actix_web::{web, HttpResponse, Responder};
 use md5;
 use serde::{Deserialize, Serialize};
 use sqlx;
@@ -61,7 +63,7 @@ pub async fn get_shortened_url(urlcode: Path<String>, state: web::Data<State>) -
 pub async fn post_url(
     input: web::Json<URLRequest>,
     state: web::Data<State>,
-) -> Result<String, Error> {
+) -> Result<HttpResponse, Error> {
     let state = state.clone();
     let db_connection = &state.db_connection;
     let short_url = shorten_url_md5(input.target.clone()).await;
@@ -70,7 +72,7 @@ pub async fn post_url(
     //           export DATABASE_URL="postgres://tyto@localhost/tyto"
     let _rec = sqlx::query!(
         r#"INSERT INTO tyto.links (address,target,description,banned) VALUES ($1,$2,$3,$4) RETURNING id"#,
-        "ksjdsdhv".to_owned(),
+        short_url.clone(),
         input.target.clone(),
         input.description,
         input.banned
@@ -78,8 +80,13 @@ pub async fn post_url(
     .fetch_one(db_connection)
     .await?;
 
-    Ok(format!("{}/{}", &state.config.domain_name, short_url))
-    // Ok(1)
+    let response = types::Response {
+        status: types::Status::SUCCESS,
+        message: None,
+        data: Some(format!("{}/{}", &state.config.domain_name, short_url)),
+    };
+
+    Ok(HttpResponse::build(StatusCode::CREATED).json(response))
 }
 
 /// Returns a shortened version of a URL
