@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate serde_json;
+
 // use crate::endpoints;
 use crate::config::Config;
 use actix_web::{web, App, HttpResponse, HttpServer};

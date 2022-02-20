@@ -6,6 +6,8 @@ use actix_web::web::Path;
 use actix_web::{web, HttpResponse, Responder};
 use md5;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
+use serde_json::{self, value};
 use sqlx;
 
 /// A struct used to represent request input for /urls POST
@@ -28,12 +30,7 @@ enum Status {
 pub struct Response {
     status: Status,
     message: Option<String>,
-    data: String,
-}
-
-/// Removes URL from a data structure
-pub fn _remove_url(url: String) {
-    println!("Remove {} from a data structure", url);
+    data: value::Value,
 }
 
 /// Web handler - GET
@@ -47,13 +44,13 @@ pub async fn get_shortened_url(urlcode: Path<String>, state: web::Data<State>) -
         web::Json(Response {
             status: Status::SUCCESS,
             message: None,
-            data: v.clone(),
+            data: serde_json::from_str(v).unwrap(),
         })
     } else {
         web::Json(Response {
             status: Status::FAILURE,
             message: Some("URL not found".to_owned()),
-            data: "".to_owned(),
+            data: serde_json::from_str("{}").unwrap(),
         })
     }
 }
@@ -64,6 +61,11 @@ pub async fn post_url(
     input: web::Json<URLRequest>,
     state: web::Data<State>,
 ) -> Result<HttpResponse, Error> {
+    #[derive(Serialize)]
+    struct OutputData {
+        pub url: String,
+    };
+
     let state = state.clone();
     let db_connection = &state.db_connection;
     let short_url = shorten_url_md5(input.target.clone()).await;
@@ -80,10 +82,14 @@ pub async fn post_url(
     .fetch_one(db_connection)
     .await?;
 
+    let output = json!({
+        "url": format!("{}/{}", &state.config.domain_name, short_url),
+    });
+
     let response = types::Response {
         status: types::Status::SUCCESS,
         message: None,
-        data: Some(format!("{}/{}", &state.config.domain_name, short_url)),
+        data: output,
     };
 
     Ok(HttpResponse::build(StatusCode::CREATED).json(response))

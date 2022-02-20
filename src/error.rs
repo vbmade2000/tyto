@@ -26,7 +26,7 @@ impl ResponseError for Error {
         let response = types::Response {
             status: types::Status::FAILURE,
             message: Some(self.to_string()),
-            data: None,
+            data: serde_json::from_str("{}").unwrap(),
         };
 
         HttpResponse::build(status).json(response)

@@ -1,4 +1,5 @@
 use serde::Serialize;
+use serde_json::{self, value};
 
 #[derive(Serialize)]
 pub enum Status {
@@ -10,5 +11,5 @@ pub enum Status {
 pub struct Response {
     pub status: Status,
     pub message: Option<String>,
-    pub data: Option<String>,
+    pub data: value::Value,
 }
