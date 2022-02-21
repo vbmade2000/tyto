@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate serde_json;
 
 // use crate::endpoints;
@@ -44,6 +43,7 @@ async fn main() -> std::io::Result<()> {
                     web::get().to(endpoints::get_shortened_url),
                 )
                 .route("/urls", web::post().to(endpoints::post_url))
+                .route("/urls", web::get().to(endpoints::get_urls))
                 .service(web::scope("admin").route("", web::get().to(|| HttpResponse::Ok()))),
         )
     })

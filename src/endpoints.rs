@@ -4,6 +4,8 @@ use crate::types;
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
 use actix_web::{web, HttpResponse, Responder};
+use chrono::DateTime;
+use chrono::Utc;
 use md5;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -64,7 +66,7 @@ pub async fn post_url(
     #[derive(Serialize)]
     struct OutputData {
         pub url: String,
-    };
+    }
 
     let state = state.clone();
     let db_connection = &state.db_connection;
@@ -98,4 +100,52 @@ pub async fn post_url(
 /// Returns a shortened version of a URL
 pub async fn shorten_url_md5(long_url: String) -> String {
     format!("{:?}", md5::compute(long_url))
+}
+
+/// Web Handler - GET
+/// Returns all the URLs from database
+pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
+    let state = state.clone();
+    let db_connection = &state.db_connection;
+
+    let links = sqlx::query!(r#"SELECT * FROM tyto.links ORDER BY created_at ASC"#,)
+        .fetch_all(db_connection)
+        .await?;
+
+    #[derive(Serialize)]
+    pub struct Link {
+        pub id: i32,
+        pub address: String,
+        pub description: Option<String>,
+        pub banned: bool,
+        pub target: String,
+        pub visit_count: i32,
+        pub created_at: DateTime<Utc>,
+        pub updated_at: DateTime<Utc>,
+    }
+
+    let mut output = Vec::new();
+    // let mut temp_desc: Option<String>;
+    for link in links {
+        // temp_desc = link.description;
+        output.push(Link {
+            id: link.id,
+            address: link.address,
+            description: link.description,
+            banned: link.banned,
+            target: link.target,
+            visit_count: link.visit_count,
+            created_at: link.created_at,
+            updated_at: link.updated_at,
+        });
+    }
+
+    // Prepare response
+    let response = types::Response {
+        status: types::Status::SUCCESS,
+        message: None,
+        data: serde_json::to_value(output).unwrap(),
+    };
+
+    Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
