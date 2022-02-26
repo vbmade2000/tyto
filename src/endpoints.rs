@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::state::State;
-use crate::types;
+use crate::types::{self, Link};
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
 use actix_web::{web, HttpResponse, Responder};
@@ -37,24 +37,37 @@ pub struct Response {
 
 /// Web handler - GET
 /// Returns a shortened URL for a longer version
-pub async fn get_shortened_url(urlcode: Path<String>, state: web::Data<State>) -> impl Responder {
+pub async fn get_shortened_url(
+    id: Path<i32>,
+    state: web::Data<State>,
+) -> Result<HttpResponse, Error> {
+    // Record { id: 1, address: "0a137b375cc3881a70e186ce2172c8d1", description: None, banned: false, target: "www.google.com", visit_count: 0, created_at: 2022-02-26T15:01:42.112443Z, updated_at: 2022-02-26T15:01:42.112443Z }
+
     let state = state.clone();
-    let urls = &state.urls;
-    let urls = urls.lock().unwrap();
-    let url_found = urls.get(&urlcode.into_inner());
-    if let Some(v) = url_found {
-        web::Json(Response {
-            status: Status::SUCCESS,
-            message: None,
-            data: serde_json::from_str(v).unwrap(),
-        })
-    } else {
-        web::Json(Response {
-            status: Status::FAILURE,
-            message: Some("URL not found".to_owned()),
-            data: serde_json::from_str("{}").unwrap(),
-        })
-    }
+    let db_connection = &state.db_connection;
+    let id = id.into_inner();
+
+    let link_data = sqlx::query!(r#"SELECT * FROM tyto.links WHERE id=$1"#, id)
+        .fetch_one(db_connection)
+        .await?;
+
+    let found_link = Link {
+        id: link_data.id,
+        address: link_data.address,
+        description: link_data.description,
+        banned: link_data.banned,
+        target: link_data.target,
+        visit_count: link_data.visit_count,
+        created_at: link_data.created_at,
+        updated_at: link_data.updated_at,
+    };
+    // Prepare response
+    let response = types::Response {
+        status: types::Status::SUCCESS,
+        message: None,
+        data: serde_json::to_value(found_link).unwrap(),
+    };
+    Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
 
 /// Web handler - POST
@@ -112,22 +125,8 @@ pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
         .fetch_all(db_connection)
         .await?;
 
-    #[derive(Serialize)]
-    pub struct Link {
-        pub id: i32,
-        pub address: String,
-        pub description: Option<String>,
-        pub banned: bool,
-        pub target: String,
-        pub visit_count: i32,
-        pub created_at: DateTime<Utc>,
-        pub updated_at: DateTime<Utc>,
-    }
-
     let mut output = Vec::new();
-    // let mut temp_desc: Option<String>;
     for link in links {
-        // temp_desc = link.description;
         output.push(Link {
             id: link.id,
             address: link.address,

@@ -2,11 +2,11 @@
 /<shorturl>
 
 => URLS
-1. /api/v1/urls - GET - Get all URLs
+1. /api/v1/urls - GET - Get all URLs - Done
 2. /api/v1/urls/{id} - GET - Get URL with <id>
 3. /api/v1/urls/{id} - DELETE - Delete URL with <id>
 4. /api/v1/urls/{id} - PATCH - Update target part of URL with <id>
-5. /api/v1/urls - POST - Create new shortened URL
+5. /api/v1/urls - POST - Create new shortened URL - Done
 
 Tools to be used:
 1. sqlx for ORM
