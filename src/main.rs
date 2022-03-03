@@ -41,6 +41,7 @@ async fn main() -> std::io::Result<()> {
                 .route("/urls/{id}", web::get().to(endpoints::get_shortened_url))
                 .route("/urls", web::post().to(endpoints::post_url))
                 .route("/urls", web::get().to(endpoints::get_urls))
+                .route("/urls/{id}", web::delete().to(endpoints::delete_url))
                 .service(web::scope("admin").route("", web::get().to(|| HttpResponse::Ok()))),
         )
     })

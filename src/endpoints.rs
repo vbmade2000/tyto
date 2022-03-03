@@ -35,7 +35,27 @@ pub struct Response {
     data: value::Value,
 }
 
-/// Web handler - GET
+/// Web handler - /urls/{id} - DELETE
+/// Deletes a URL record with {id}
+pub async fn delete_url(id: Path<i32>, state: web::Data<State>) -> Result<HttpResponse, Error> {
+    let state = state.clone();
+    let db_connection = &state.db_connection;
+    let id = id.into_inner();
+
+    let _ = sqlx::query!(r#"DELETE FROM tyto.links WHERE id=$1"#, id)
+        .execute(db_connection)
+        .await?;
+
+    let response = types::Response {
+        status: types::Status::SUCCESS,
+        message: None,
+        data: serde_json::to_value("{}").unwrap(),
+    };
+
+    Ok(HttpResponse::build(StatusCode::OK).json(response))
+}
+
+/// Web handler - /urls/{id}- GET
 /// Returns a shortened URL for a longer version
 pub async fn get_shortened_url(
     id: Path<i32>,
@@ -70,7 +90,7 @@ pub async fn get_shortened_url(
     Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
 
-/// Web handler - POST
+/// Web handler - /urls- POST
 /// Creates a new shortened URL for supplied longer URL
 pub async fn post_url(
     input: web::Json<URLRequest>,
@@ -115,7 +135,7 @@ pub async fn shorten_url_md5(long_url: String) -> String {
     format!("{:?}", md5::compute(long_url))
 }
 
-/// Web Handler - GET
+/// Web handler - /urls - GET
 /// Returns all the URLs from database
 pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
     let state = state.clone();
