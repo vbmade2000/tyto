@@ -1,39 +1,12 @@
 use crate::error::Error;
 use crate::state::State;
-use crate::types::{self, Link};
+use crate::types::{self, CreateURLRequest, Link};
 use actix_web::http::StatusCode;
 use actix_web::web::Path;
-use actix_web::{web, HttpResponse, Responder};
-use chrono::DateTime;
-use chrono::Utc;
-use md5;
-use serde::{Deserialize, Serialize};
+use actix_web::{web, HttpResponse};
+use serde::Serialize;
 use serde_json::json;
-use serde_json::{self, value};
-use sqlx;
-
-/// A struct used to represent request input for /urls POST
-#[derive(Deserialize)]
-pub struct URLRequest {
-    target: String,
-    description: Option<String>,
-    banned: bool,
-}
-
-/// Represents a response status
-#[derive(Serialize)]
-enum Status {
-    SUCCESS,
-    FAILURE,
-}
-
-/// A struct used to represent response output for /urls GET
-#[derive(Serialize)]
-pub struct Response {
-    status: Status,
-    message: Option<String>,
-    data: value::Value,
-}
+use serde_json::{self};
 
 /// Web handler - /urls/{id} - DELETE
 /// Deletes a URL record with {id}
@@ -47,7 +20,7 @@ pub async fn delete_url(id: Path<i32>, state: web::Data<State>) -> Result<HttpRe
         .await?;
 
     let response = types::Response {
-        status: types::Status::SUCCESS,
+        status: types::Status::Success,
         message: None,
         data: serde_json::to_value("{}").unwrap(),
     };
@@ -56,7 +29,7 @@ pub async fn delete_url(id: Path<i32>, state: web::Data<State>) -> Result<HttpRe
 }
 
 /// Web handler - /urls/{id}- GET
-/// Returns a shortened URL for a longer version
+/// Returns a shortened URL record for a supplied {id}
 pub async fn get_shortened_url(
     id: Path<i32>,
     state: web::Data<State>,
@@ -83,7 +56,7 @@ pub async fn get_shortened_url(
     };
     // Prepare response
     let response = types::Response {
-        status: types::Status::SUCCESS,
+        status: types::Status::Success,
         message: None,
         data: serde_json::to_value(found_link).unwrap(),
     };
@@ -93,7 +66,7 @@ pub async fn get_shortened_url(
 /// Web handler - /urls- POST
 /// Creates a new shortened URL for supplied longer URL
 pub async fn post_url(
-    input: web::Json<URLRequest>,
+    input: web::Json<CreateURLRequest>,
     state: web::Data<State>,
 ) -> Result<HttpResponse, Error> {
     #[derive(Serialize)]
@@ -122,7 +95,7 @@ pub async fn post_url(
     });
 
     let response = types::Response {
-        status: types::Status::SUCCESS,
+        status: types::Status::Success,
         message: None,
         data: output,
     };
@@ -136,7 +109,7 @@ pub async fn shorten_url_md5(long_url: String) -> String {
 }
 
 /// Web handler - /urls - GET
-/// Returns all the URLs from database
+/// Returns all the URL records from database
 pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
     let state = state.clone();
     let db_connection = &state.db_connection;
@@ -161,7 +134,7 @@ pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
 
     // Prepare response
     let response = types::Response {
-        status: types::Status::SUCCESS,
+        status: types::Status::Success,
         message: None,
         data: serde_json::to_value(output).unwrap(),
     };

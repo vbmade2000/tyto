@@ -1,11 +1,12 @@
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{self, value};
 
+/// Represents a request status
 #[derive(Serialize)]
 pub enum Status {
-    SUCCESS,
-    FAILURE,
+    Success,
+    Failure,
 }
 
 #[derive(Serialize)]
@@ -15,6 +16,7 @@ pub struct Response {
     pub data: value::Value,
 }
 
+/// A struct to represent a single URL record
 #[derive(Serialize)]
 pub struct Link {
     pub id: i32,
@@ -25,4 +27,12 @@ pub struct Link {
     pub visit_count: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+}
+
+/// A struct used to represent a request input for /urls POST
+#[derive(Deserialize)]
+pub struct CreateURLRequest {
+    pub target: String,
+    pub description: Option<String>,
+    pub banned: bool,
 }

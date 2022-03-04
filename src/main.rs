@@ -1,6 +1,5 @@
 extern crate serde_json;
 
-// use crate::endpoints;
 use crate::config::Config;
 use actix_web::{web, App, HttpResponse, HttpServer};
 use sqlx::{self};
@@ -42,7 +41,7 @@ async fn main() -> std::io::Result<()> {
                 .route("/urls", web::post().to(endpoints::post_url))
                 .route("/urls", web::get().to(endpoints::get_urls))
                 .route("/urls/{id}", web::delete().to(endpoints::delete_url))
-                .service(web::scope("admin").route("", web::get().to(|| HttpResponse::Ok()))),
+                .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
         )
     })
     .bind(ip_port)?
@@ -57,7 +56,6 @@ async fn read_config<P: AsRef<Path>>(config_file_path: P) -> Config {
         .expect("Error in reading configuration from {config_file_path}");
 
     // TODO: Handle error properly
-    let config = toml::from_str::<Config>(&toml_data)
-        .expect("Error in parsing configuration file {config_file_path}");
-    config
+    toml::from_str::<Config>(&toml_data)
+        .expect("Error in parsing configuration file {config_file_path}")
 }

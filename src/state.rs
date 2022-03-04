@@ -14,7 +14,7 @@ impl State {
         State {
             config,
             urls: Mutex::default(),
-            db_connection: db_connection,
+            db_connection,
         }
     }
 }

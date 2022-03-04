@@ -9,7 +9,7 @@ pub async fn get_db_conn_string(cfg: config::Config) -> String {
     // postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]
 
     // let database_urll = "postgres://tyto@localhost:5432/tyto";
-    if cfg.db_password.len() != 0 {
+    if !cfg.db_password.is_empty() {
         format!(
             "postgres://{}:{}@{}:{}/{}",
             cfg.db_user, cfg.db_password, cfg.db_host, cfg.db_port, cfg.db_name

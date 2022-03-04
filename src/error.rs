@@ -5,26 +5,26 @@ use snafu::prelude::*;
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("Database Error: {}", source))]
-    DatabaseError { source: sqlx::Error },
+    Database { source: sqlx::Error },
 
     #[snafu(display("Configuration Error: {}", source))]
-    ConfigFileError { source: std::io::Error },
+    ConfigFile { source: std::io::Error },
 
     #[snafu(display("Configuration Error: {}", source))]
-    ConfigReadError { source: toml::de::Error },
+    ConfigRead { source: toml::de::Error },
 }
 
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         use Error::*;
         let status = match self {
-            DatabaseError { source } => StatusCode::INTERNAL_SERVER_ERROR,
-            ConfigFileError { source } => StatusCode::INTERNAL_SERVER_ERROR,
-            ConfigReadError { source } => StatusCode::INTERNAL_SERVER_ERROR,
+            Database { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
+            ConfigFile { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
+            ConfigRead { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
         let response = types::Response {
-            status: types::Status::FAILURE,
+            status: types::Status::Failure,
             message: Some(self.to_string()),
             data: serde_json::from_str("{}").unwrap(),
         };
@@ -35,18 +35,18 @@ impl ResponseError for Error {
 
 impl From<sqlx::Error> for Error {
     fn from(source: sqlx::Error) -> Error {
-        Error::DatabaseError { source }
+        Error::Database { source }
     }
 }
 
 impl From<toml::de::Error> for Error {
     fn from(source: toml::de::Error) -> Error {
-        Error::ConfigReadError { source }
+        Error::ConfigRead { source }
     }
 }
 
 impl From<std::io::Error> for Error {
     fn from(source: std::io::Error) -> Error {
-        Error::ConfigFileError { source }
+        Error::ConfigFile { source }
     }
 }
