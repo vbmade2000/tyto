@@ -35,14 +35,17 @@ async fn main() -> std::io::Result<()> {
     println!("Starting server at: {}", ip_port);
 
     HttpServer::new(move || {
-        App::new().app_data(shared_state.clone()).service(
-            web::scope("/api/v1")
-                .route("/urls/{id}", web::get().to(endpoints::get_shortened_url))
-                .route("/urls", web::post().to(endpoints::post_url))
-                .route("/urls", web::get().to(endpoints::get_urls))
-                .route("/urls/{id}", web::delete().to(endpoints::delete_url))
-                .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
-        )
+        App::new()
+            .app_data(shared_state.clone())
+            .service(
+                web::scope("/api/v1")
+                    .route("/urls/{id}", web::get().to(endpoints::get_shortened_url))
+                    .route("/urls", web::post().to(endpoints::post_url))
+                    .route("/urls", web::get().to(endpoints::get_urls))
+                    .route("/urls/{id}", web::delete().to(endpoints::delete_url))
+                    .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
+            )
+            .service(web::scope("").route("/health", web::get().to(endpoints::health)))
     })
     .bind(ip_port)?
     .run()

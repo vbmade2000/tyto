@@ -8,6 +8,17 @@ use serde::Serialize;
 use serde_json::json;
 use serde_json::{self};
 
+/// Web handler - /health
+/// Returns health of the system
+pub async fn health() -> Result<HttpResponse, Error> {
+    let response = types::Response {
+        status: types::Status::Success,
+        message: None,
+        data: serde_json::to_value("{}").unwrap(),
+    };
+    Ok(HttpResponse::build(StatusCode::OK).json(response))
+}
+
 /// Web handler - /urls/{id} - DELETE
 /// Deletes a URL record with {id}
 pub async fn delete_url(id: Path<i32>, state: web::Data<State>) -> Result<HttpResponse, Error> {
