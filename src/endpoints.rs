@@ -57,6 +57,7 @@ pub async fn get_shortened_url(
 
     let found_link = Link {
         id: link_data.id,
+        user_id: link_data.user_id,
         address: link_data.address,
         description: link_data.description,
         banned: link_data.banned,
@@ -92,11 +93,12 @@ pub async fn post_url(
     // IMP NOTE: DATABASE_URL env var must be set for this to work.
     //           export DATABASE_URL="postgres://tyto@localhost/tyto"
     let _rec = sqlx::query!(
-        r#"INSERT INTO tyto.links (address,target,description,banned) VALUES ($1,$2,$3,$4) RETURNING id"#,
+        r#"INSERT INTO tyto.links (address,target,description,banned,user_id) VALUES ($1,$2,$3,$4,$5) RETURNING id"#,
         short_url.clone(),
         input.target.clone(),
         input.description,
-        input.banned
+        input.banned,
+        input.user_id,
     )
     .fetch_one(db_connection)
     .await?;
@@ -133,6 +135,7 @@ pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
     for link in links {
         output.push(Link {
             id: link.id,
+            user_id: link.user_id,
             address: link.address,
             description: link.description,
             banned: link.banned,

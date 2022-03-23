@@ -20,6 +20,7 @@ pub struct Response {
 #[derive(Serialize)]
 pub struct Link {
     pub id: i32,
+    pub user_id: i32,
     pub address: String,
     pub description: Option<String>,
     pub banned: bool,
@@ -35,4 +36,5 @@ pub struct CreateURLRequest {
     pub target: String,
     pub description: Option<String>,
     pub banned: bool,
+    pub user_id: i32,
 }
