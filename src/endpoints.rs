@@ -21,7 +21,7 @@ pub async fn health() -> Result<HttpResponse, Error> {
 
 /// Web handler - /urls/{id} - DELETE
 /// Deletes a URL record with {id}
-pub async fn delete_url(id: Path<i32>, state: web::Data<State>) -> Result<HttpResponse, Error> {
+pub async fn delete_url(id: Path<i64>, state: web::Data<State>) -> Result<HttpResponse, Error> {
     let state = state.clone();
     let db_connection = &state.db_connection;
     let id = id.into_inner();
@@ -42,7 +42,7 @@ pub async fn delete_url(id: Path<i32>, state: web::Data<State>) -> Result<HttpRe
 /// Web handler - /urls/{id}- GET
 /// Returns a shortened URL record for a supplied {id}
 pub async fn get_shortened_url(
-    id: Path<i32>,
+    id: Path<i64>,
     state: web::Data<State>,
 ) -> Result<HttpResponse, Error> {
     // Record { id: 1, address: "0a137b375cc3881a70e186ce2172c8d1", description: None, banned: false, target: "www.google.com", visit_count: 0, created_at: 2022-02-26T15:01:42.112443Z, updated_at: 2022-02-26T15:01:42.112443Z }

@@ -1,16 +1,19 @@
 extern crate serde_json;
 
-use crate::config::Config;
+use crate::{config::Config, core::traits::UserManager};
 use actix_web::{web, App, HttpResponse, HttpServer};
 use sqlx::{self};
 use std::{fs, path::Path};
+use user_management::TytoUserManager;
 
 mod config;
+mod core;
 mod db;
 mod endpoints;
 mod error;
 mod state;
 mod types;
+mod user_management;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -29,7 +32,9 @@ async fn main() -> std::io::Result<()> {
         .await
         .unwrap();
 
-    let shared_state = web::Data::new(state::State::new(cfg.clone(), db_connection));
+    let state = state::State::new(cfg.clone(), db_connection);
+    let shared_state = web::Data::new(state);
+    let user_manager = web::Data::new(TytoUserManager::new(shared_state.clone()));
 
     let ip_port = format!("{}:{}", cfg.ip, cfg.port);
     println!("Starting server at: {}", ip_port);
@@ -37,6 +42,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(shared_state.clone())
+            .app_data(user_manager.clone())
             .service(
                 web::scope("/api/v1")
                     .route("/urls/{id}", web::get().to(endpoints::get_shortened_url))

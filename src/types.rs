@@ -19,8 +19,8 @@ pub struct Response {
 /// A struct to represent a single URL record
 #[derive(Serialize)]
 pub struct Link {
-    pub id: i32,
-    pub user_id: i32,
+    pub id: i64,
+    pub user_id: i64,
     pub address: String,
     pub description: Option<String>,
     pub banned: bool,
@@ -36,5 +36,23 @@ pub struct CreateURLRequest {
     pub target: String,
     pub description: Option<String>,
     pub banned: bool,
-    pub user_id: i32,
+    pub user_id: i64,
+}
+
+#[derive(Deserialize)]
+pub struct User {
+    /// Unique ID of a user.
+    pub id: Option<i64>,
+    /// API key user can use to programatically use Tyto APIs. Not in use currently.
+    pub apikey: Option<String>,
+    /// Shows if user is banned.
+    pub banned: bool,
+    /// Email address of a user.
+    pub email: String,
+    /// Password of a user.
+    pub password: String,
+    /// Timestamp when user is created in database.
+    pub created_at: DateTime<Utc>,
+    /// Timestamp when user is last updated in database.
+    pub updated_at: DateTime<Utc>,
 }
