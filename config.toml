@@ -8,3 +8,8 @@ db_name = "tyto"
 db_user = "tyto"
 db_password = ""
 
+[email]
+username = "testusername"
+password = "testpassword"
+server = "smtp.test.com"
+

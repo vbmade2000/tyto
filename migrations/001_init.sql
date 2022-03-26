@@ -1,6 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS tyto;
 
-CREATE TABLE tyto.users (
+CREATE TABLE IF NOT EXISTS tyto.users (
 	id bigserial NOT NULL,
 	apikey varchar(255) NULL,
 	banned bool NOT NULL DEFAULT false,

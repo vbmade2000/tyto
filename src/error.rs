@@ -12,6 +12,11 @@ pub enum Error {
 
     #[snafu(display("Configuration Error: {}", source))]
     ConfigRead { source: toml::de::Error },
+
+    #[snafu(display("Email sending Error: {}", source))]
+    Email {
+        source: lettre::transport::smtp::Error,
+    },
 }
 
 impl ResponseError for Error {
@@ -21,6 +26,7 @@ impl ResponseError for Error {
             Database { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             ConfigFile { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             ConfigRead { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
+            Email { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
         };
 
         let response = types::Response {
@@ -48,5 +54,11 @@ impl From<toml::de::Error> for Error {
 impl From<std::io::Error> for Error {
     fn from(source: std::io::Error) -> Error {
         Error::ConfigFile { source }
+    }
+}
+
+impl From<lettre::transport::smtp::Error> for Error {
+    fn from(source: lettre::transport::smtp::Error) -> Error {
+        Error::Email { source }
     }
 }

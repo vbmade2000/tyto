@@ -1,6 +1,16 @@
 use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
+pub struct EmailConfig {
+    /// Username for SMTP server
+    pub username: String,
+    /// Password for SMTP server
+    pub password: String,
+    /// SMTP server address
+    pub server: String,
+}
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     // Application settings
     pub domain_name: String,
@@ -13,4 +23,7 @@ pub struct Config {
     pub db_port: u16,
     pub db_user: String,
     pub db_password: String,
+
+    // Email settings
+    pub email: EmailConfig,
 }

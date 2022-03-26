@@ -1,5 +1,7 @@
 extern crate serde_json;
 
+use crate::core::traits::Notifier;
+use crate::emailer::EmailNotifier;
 use crate::{config::Config, core::traits::UserManager};
 use actix_web::{web, App, HttpResponse, HttpServer};
 use sqlx::{self};
@@ -9,6 +11,7 @@ use user_management::TytoUserManager;
 mod config;
 mod core;
 mod db;
+mod emailer;
 mod endpoints;
 mod error;
 mod state;
@@ -38,6 +41,18 @@ async fn main() -> std::io::Result<()> {
 
     let ip_port = format!("{}:{}", cfg.ip, cfg.port);
     println!("Starting server at: {}", ip_port);
+
+    // Send an email
+    let emailer = EmailNotifier::new(
+        cfg,
+        "mlvora.2010@gmail.com".to_string(),
+        "vbmade2000@gmail.com".to_string(),
+        "Test Subject".to_string(),
+        "Test body".to_string(),
+    );
+
+    let a = emailer.send().await;
+    println!("{:?}", a);
 
     HttpServer::new(move || {
         App::new()
