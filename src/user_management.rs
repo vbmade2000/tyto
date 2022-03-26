@@ -10,11 +10,6 @@ pub struct TytoUserManager {
 
 #[async_trait()]
 impl UserManager for TytoUserManager {
-    /// Creates a new instance of concrete [TytoUserManager]
-    fn new(state: web::Data<State>) -> Self {
-        TytoUserManager { state }
-    }
-
     /// Creates a new user
     async fn create(&self, user: User) -> Result<(), error::Error> {
         let db_connection = &self.state.db_connection;
@@ -81,5 +76,12 @@ impl UserManager for TytoUserManager {
             .execute(db_connection)
             .await?;
         Ok(())
+    }
+}
+
+impl TytoUserManager {
+    /// Creates a new instance of concrete [TytoUserManager]
+    pub fn new(state: web::Data<State>) -> Self {
+        TytoUserManager { state }
     }
 }

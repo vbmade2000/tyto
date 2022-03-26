@@ -1,8 +1,8 @@
 extern crate serde_json;
 
+use crate::config::Config;
 use crate::core::traits::Notifier;
 use crate::emailer::EmailNotifier;
-use crate::{config::Config, core::traits::UserManager};
 use actix_web::{web, App, HttpResponse, HttpServer};
 use sqlx::{self};
 use std::{fs, path::Path};
