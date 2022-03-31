@@ -11,9 +11,9 @@ pub struct TytoUserManager {
 #[async_trait()]
 impl UserManager for TytoUserManager {
     /// Creates a new user
-    async fn create(&self, user: User) -> Result<(), error::Error> {
+    async fn create(&self, user: User) -> Result<i64, error::Error> {
         let db_connection = &self.state.db_connection;
-        let _rec = sqlx::query!(
+        let rec = sqlx::query!(
             r#"INSERT INTO tyto.users (banned,email,password) VALUES ($1,$2,$3) RETURNING id"#,
             false,
             user.email,
@@ -21,7 +21,7 @@ impl UserManager for TytoUserManager {
         )
         .fetch_one(db_connection)
         .await?;
-        Ok(())
+        Ok(rec.id)
     }
 
     /// Returns an instance of [User] for a user with supplied id
