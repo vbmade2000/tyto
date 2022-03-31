@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS tyto.users (
 	CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS tyto.links (
+CREATE TABLE IF NOT EXISTS tyto.urls (
 	id bigserial NOT NULL,
 	address varchar(255) NOT NULL, /* Shortened URL part. Like XXXX in localhost"3000/XXXX */
 	description varchar(255) NULL,
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS tyto.links (
 	created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	user_id bigserial references tyto.users(id),
-	CONSTRAINT links_pkey PRIMARY KEY (id),
+	CONSTRAINT urls_pkey PRIMARY KEY (id),
 	CONSTRAINT address_unique UNIQUE(address)
 );
 

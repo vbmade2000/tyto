@@ -18,7 +18,7 @@ pub struct Response {
 
 /// A struct to represent a single URL record
 #[derive(Serialize)]
-pub struct Link {
+pub struct Url {
     pub id: i64,
     pub user_id: i64,
     pub address: String,

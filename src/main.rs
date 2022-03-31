@@ -1,8 +1,6 @@
 extern crate serde_json;
 
 use crate::config::Config;
-use crate::core::traits::Notifier;
-use crate::emailer::EmailNotifier;
 use actix_web::{web, App, HttpResponse, HttpServer};
 use sqlx::{self};
 use std::{fs, path::Path};
@@ -20,39 +18,30 @@ mod user_management;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // TODO: Handler errors properly using anyhow.
     // Read config file
+    // TODO: Read config file path from cmdline.
     let config_file_path = Path::new("./config.toml");
     let cfg = read_config(config_file_path).await;
 
     let db_connection_string = db::get_db_conn_string(cfg.clone()).await;
 
     // Database migration
-    let db_connection = db::get_database_connection(db_connection_string)
+    // Remove use of unwrap() and handle errors properly using anyhow.
+    let db_connection_pool = db::get_database_connection(db_connection_string)
         .await
         .unwrap();
     sqlx::migrate!("./migrations")
-        .run(&db_connection)
+        .run(&db_connection_pool)
         .await
         .unwrap();
 
-    let state = state::State::new(cfg.clone(), db_connection);
+    let state = state::State::new(cfg.clone(), db_connection_pool);
     let shared_state = web::Data::new(state);
     let user_manager = web::Data::new(TytoUserManager::new(shared_state.clone()));
 
     let ip_port = format!("{}:{}", cfg.ip, cfg.port);
     println!("Starting server at: {}", ip_port);
-
-    // Send an email
-    let emailer = EmailNotifier::new(
-        cfg,
-        "mlvora.2010@gmail.com".to_string(),
-        "vbmade2000@gmail.com".to_string(),
-        "Test Subject".to_string(),
-        "Test body".to_string(),
-    );
-
-    let a = emailer.send().await;
-    println!("{:?}", a);
 
     HttpServer::new(move || {
         App::new()

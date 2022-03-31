@@ -1,12 +1,13 @@
 use crate::error::Error;
 use crate::state::State;
-use crate::types::{self, CreateURLRequest, Link};
-use actix_web::http::StatusCode;
-use actix_web::web::Path;
-use actix_web::{web, HttpResponse};
+use crate::types::{self, CreateURLRequest, Url};
+use actix_web::{
+    http::StatusCode,
+    web::{self, Path},
+    HttpResponse,
+};
 use serde::Serialize;
-use serde_json::json;
-use serde_json::{self};
+use serde_json::{self, json};
 
 /// Web handler - /urls/{id} - DELETE
 /// Deletes a URL record with {id}
@@ -15,7 +16,7 @@ pub async fn delete_url(id: Path<i64>, state: web::Data<State>) -> Result<HttpRe
     let db_connection = &state.db_connection;
     let id = id.into_inner();
 
-    let _ = sqlx::query!(r#"DELETE FROM tyto.links WHERE id=$1"#, id)
+    let _ = sqlx::query!(r#"DELETE FROM tyto.urls WHERE id=$1"#, id)
         .execute(db_connection)
         .await?;
 
@@ -40,26 +41,26 @@ pub async fn get_shortened_url(
     let db_connection = &state.db_connection;
     let id = id.into_inner();
 
-    let link_data = sqlx::query!(r#"SELECT * FROM tyto.links WHERE id=$1"#, id)
+    let url_data = sqlx::query!(r#"SELECT * FROM tyto.urls WHERE id=$1"#, id)
         .fetch_one(db_connection)
         .await?;
 
-    let found_link = Link {
-        id: link_data.id,
-        user_id: link_data.user_id,
-        address: link_data.address,
-        description: link_data.description,
-        banned: link_data.banned,
-        target: link_data.target,
-        visit_count: link_data.visit_count,
-        created_at: link_data.created_at,
-        updated_at: link_data.updated_at,
+    let found_url = Url {
+        id: url_data.id,
+        user_id: url_data.user_id,
+        address: url_data.address,
+        description: url_data.description,
+        banned: url_data.banned,
+        target: url_data.target,
+        visit_count: url_data.visit_count,
+        created_at: url_data.created_at,
+        updated_at: url_data.updated_at,
     };
     // Prepare response
     let response = types::Response {
         status: types::Status::Success,
         message: None,
-        data: serde_json::to_value(found_link).unwrap(),
+        data: serde_json::to_value(found_url).unwrap(),
     };
     Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
@@ -82,7 +83,7 @@ pub async fn post_url(
     // IMP NOTE: DATABASE_URL env var must be set for this to work.
     //           export DATABASE_URL="postgres://tyto@localhost/tyto"
     let _rec = sqlx::query!(
-        r#"INSERT INTO tyto.links (address,target,description,banned,user_id) VALUES ($1,$2,$3,$4,$5) RETURNING id"#,
+        r#"INSERT INTO tyto.urls (address,target,description,banned,user_id) VALUES ($1,$2,$3,$4,$5) RETURNING id"#,
         short_url.clone(),
         input.target.clone(),
         input.description,
@@ -116,22 +117,22 @@ pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
     let state = state.clone();
     let db_connection = &state.db_connection;
 
-    let links = sqlx::query!(r#"SELECT * FROM tyto.links ORDER BY created_at ASC"#,)
+    let urls = sqlx::query!(r#"SELECT * FROM tyto.urls ORDER BY created_at ASC"#,)
         .fetch_all(db_connection)
         .await?;
 
     let mut output = Vec::new();
-    for link in links {
-        output.push(Link {
-            id: link.id,
-            user_id: link.user_id,
-            address: link.address,
-            description: link.description,
-            banned: link.banned,
-            target: link.target,
-            visit_count: link.visit_count,
-            created_at: link.created_at,
-            updated_at: link.updated_at,
+    for url in urls {
+        output.push(Url {
+            id: url.id,
+            user_id: url.user_id,
+            address: url.address,
+            description: url.description,
+            banned: url.banned,
+            target: url.target,
+            visit_count: url.visit_count,
+            created_at: url.created_at,
+            updated_at: url.updated_at,
         });
     }
 
