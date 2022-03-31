@@ -12,4 +12,5 @@ db_password = ""
 username = "testusername"
 password = "testpassword"
 server = "smtp.test.com"
+sender = "sender@test.com"
 

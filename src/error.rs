@@ -17,6 +17,9 @@ pub enum Error {
     Email {
         source: lettre::transport::smtp::Error,
     },
+
+    #[snafu(display("Invalid email"))]
+    InvalidEmail,
 }
 
 impl ResponseError for Error {
@@ -27,6 +30,7 @@ impl ResponseError for Error {
             ConfigFile { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             ConfigRead { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             Email { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
+            InvalidEmail => StatusCode::BAD_REQUEST,
         };
 
         let response = types::Response {

@@ -39,6 +39,7 @@ async fn main() -> std::io::Result<()> {
     let state = state::State::new(cfg.clone(), db_connection_pool);
     let shared_state = web::Data::new(state);
     let user_manager = web::Data::new(TytoUserManager::new(shared_state.clone()));
+    let confg = web::Data::new(cfg.clone());
 
     let ip_port = format!("{}:{}", cfg.ip, cfg.port);
     println!("Starting server at: {}", ip_port);
@@ -47,6 +48,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(shared_state.clone())
             .app_data(user_manager.clone())
+            .app_data(confg.clone())
             .service(
                 web::scope("/api/v1")
                     .route(
@@ -56,6 +58,7 @@ async fn main() -> std::io::Result<()> {
                     .route("/urls", web::post().to(endpoints::urls::post_url))
                     .route("/urls", web::get().to(endpoints::urls::get_urls))
                     .route("/urls/{id}", web::delete().to(endpoints::urls::delete_url))
+                    .route("/users", web::post().to(endpoints::users::create_user))
                     .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
             )
             .service(web::scope("").route("/health", web::get().to(endpoints::health::health)))

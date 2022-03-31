@@ -17,4 +17,5 @@ chrono = { version = "0.4", features = ["serde"] }
 async-trait = "0.1.52"
 lettre = { version = "0.10.0-rc.3", features = ["tokio1", "smtp-transport", "tokio1-native-tls", "hostname", "pool", "builder"]}
 tokio = { version = "1", features = ["full"] }
+validator = { version = "0.14", features = ["derive"] }
 

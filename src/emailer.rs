@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use crate::config::Config;
 use crate::core::traits::Notifier;
 use crate::error;
+use actix_web::web;
 use lettre::{
     transport::smtp::authentication::Credentials, AsyncSmtpTransport, AsyncTransport, Message,
     Tokio1Executor,
@@ -19,7 +20,7 @@ pub struct EmailNotifier {
     /// Mail body
     pub body: String,
     /// [Config] object
-    pub cfg: Config,
+    pub cfg: web::Data<Config>,
 }
 
 #[async_trait()]
@@ -37,11 +38,10 @@ impl Notifier for EmailNotifier {
                 .unwrap()
                 .credentials(creds)
                 .build();
-
+        println!("TO: {:?}", self.to);
         // Build a message
         let email = Message::builder()
             .from(self.from.parse().unwrap())
-            // .reply_to("Yuin <yuin@domain.tld>".parse().unwrap())
             .to(self.to.parse().unwrap())
             .subject(self.subject.to_string())
             .body(self.body.to_string())
@@ -55,7 +55,13 @@ impl Notifier for EmailNotifier {
 }
 
 impl EmailNotifier {
-    pub fn new(cfg: Config, from: String, to: String, subject: String, body: String) -> Self {
+    pub fn new(
+        cfg: web::Data<Config>,
+        from: String,
+        to: String,
+        subject: String,
+        body: String,
+    ) -> Self {
         EmailNotifier {
             from,
             to,

@@ -1,4 +1,5 @@
 use crate::error;
+use crate::types::CreateUserRequest;
 use actix_web::web;
 use async_trait::async_trait;
 
@@ -11,11 +12,10 @@ pub struct TytoUserManager {
 #[async_trait()]
 impl UserManager for TytoUserManager {
     /// Creates a new user
-    async fn create(&self, user: User) -> Result<i64, error::Error> {
+    async fn create(&self, user: CreateUserRequest) -> Result<i64, error::Error> {
         let db_connection = &self.state.db_connection;
         let rec = sqlx::query!(
-            r#"INSERT INTO tyto.users (banned,email,password) VALUES ($1,$2,$3) RETURNING id"#,
-            false,
+            r#"INSERT INTO tyto.users (email,password) VALUES ($1,$2) RETURNING id"#,
             user.email,
             user.password,
         )

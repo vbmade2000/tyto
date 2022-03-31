@@ -40,6 +40,14 @@ pub struct CreateURLRequest {
 }
 
 #[derive(Deserialize)]
+pub struct CreateUserRequest {
+    /// Email address of a user.
+    pub email: String,
+    /// Password of a user.
+    pub password: String,
+}
+
+#[derive(Deserialize)]
 pub struct User {
     /// Unique ID of a user.
     pub id: Option<i64>,

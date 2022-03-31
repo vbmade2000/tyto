@@ -2,6 +2,8 @@ use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct EmailConfig {
+    /// Sender email address
+    pub sender: String,
     /// Username for SMTP server
     pub username: String,
     /// Password for SMTP server
