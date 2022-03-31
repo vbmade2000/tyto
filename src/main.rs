@@ -60,13 +60,16 @@ async fn main() -> std::io::Result<()> {
             .app_data(user_manager.clone())
             .service(
                 web::scope("/api/v1")
-                    .route("/urls/{id}", web::get().to(endpoints::get_shortened_url))
-                    .route("/urls", web::post().to(endpoints::post_url))
-                    .route("/urls", web::get().to(endpoints::get_urls))
-                    .route("/urls/{id}", web::delete().to(endpoints::delete_url))
+                    .route(
+                        "/urls/{id}",
+                        web::get().to(endpoints::urls::get_shortened_url),
+                    )
+                    .route("/urls", web::post().to(endpoints::urls::post_url))
+                    .route("/urls", web::get().to(endpoints::urls::get_urls))
+                    .route("/urls/{id}", web::delete().to(endpoints::urls::delete_url))
                     .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
             )
-            .service(web::scope("").route("/health", web::get().to(endpoints::health)))
+            .service(web::scope("").route("/health", web::get().to(endpoints::health::health)))
     })
     .bind(ip_port)?
     .run()
