@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS tyto.users (
 	email varchar(255) NOT NULL,
 	"password" varchar(255) NOT NULL,
 	deleted bool NOT NULL DEFAULT false,
+	activation_code varchar(255),
 	created_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_at timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT users_email_unique UNIQUE (email),
