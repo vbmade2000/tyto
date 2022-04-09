@@ -24,24 +24,40 @@ pub async fn create_user(
         return Err(Error::InvalidEmail);
     }
 
+    // Read configurations
     let sender = cfg.email.sender.to_owned();
-    let user_id = user_manager.create(new_user.into_inner()).await?;
+    let activation_url = cfg.activation_url.to_owned();
+
+    let (user_id, activation_code) = user_manager.create(new_user.into_inner()).await?;
     let output = json!({
         "id": user_id,
     });
 
-    /* IMP: Not sure if this is a good idea to create new instance of EmailNotifier
-     *  every time we create new user but for now it is OK to use in that way. Even if
-     *  we pass it as shared data then also we need to change "To" field of email for
-     *  every user which is not possible for now. For production, this functionality
-     *  should be handed over to either external provider like Sendgrid or a separate
-     *  service as it can introduce delay in returning response and affect speed.
-     */
-
     // Notify a user about her newly created account.
     // TODO: Use some template crate for email body.
     let subject = String::from("Welcome to Tyto!");
-    let body = String::from("Hi there, \n Your account has been created successfully with Tyto");
+    // Endpoint: www.localhost:8442/api/v1/users/{code}/activate
+    let mut body = String::from(
+        r#"Hi there,
+                
+           Your accouant in Tyto is successfully created.
+                  
+           Please visit {activation_url}/{code}.
+           
+           Regards,
+           Tyto Team"#,
+    );
+
+    // Replace placeholders with actual activation code
+    body = body.replace("{code}", &activation_code);
+    body = body.replace("{activation_url}", &activation_url);
+
+    /* |--IMP--|: As an alternative to creating new instance of EmailNotifier every time here, we can
+     * have a single instance wrapped in Arc<Mutex>. In current scenario where email sending is
+     * not performed in separate task/thread (it is sent in separate thread but it still takes time
+     * so it has to be sent in separate tokio task), it can slow down the whole process. But this is
+     * inevitable in future when the system matures.
+     */
     let emailer = EmailNotifier::new(cfg, sender, email, subject, body);
 
     // TODO: Use log here
@@ -57,4 +73,19 @@ pub async fn create_user(
     };
 
     Ok(HttpResponse::build(StatusCode::CREATED).json(response))
+}
+
+pub async fn activate(
+    activation_code: web::Path<String>,
+    user_manager: web::Data<TytoUserManager>,
+) -> Result<HttpResponse, Error> {
+    /* TODO: Decide a length of the activation_code and return error
+     *  if code is more than decided length. Even better define length
+     *  in parameter if Actix allows. This can stop kind of DoS by stopping
+     *  calls before it hits the database.
+     */
+    let activation_code = activation_code.into_inner();
+    user_manager.activate(activation_code).await?;
+
+    Ok(HttpResponse::build(StatusCode::OK).finish())
 }

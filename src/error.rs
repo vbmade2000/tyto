@@ -20,6 +20,9 @@ pub enum Error {
 
     #[snafu(display("Invalid email"))]
     InvalidEmail,
+
+    #[snafu(display("Account is already activated."))]
+    AccountAlreadyActivated,
 }
 
 impl ResponseError for Error {
@@ -31,6 +34,7 @@ impl ResponseError for Error {
             ConfigRead { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             Email { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             InvalidEmail => StatusCode::BAD_REQUEST,
+            AccountAlreadyActivated => StatusCode::CONFLICT,
         };
 
         let response = types::Response {

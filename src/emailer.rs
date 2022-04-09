@@ -38,7 +38,7 @@ impl Notifier for EmailNotifier {
                 .unwrap()
                 .credentials(creds)
                 .build();
-        println!("TO: {:?}", self.to);
+
         // Build a message
         let email = Message::builder()
             .from(self.from.parse().unwrap())

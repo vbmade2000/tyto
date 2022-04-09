@@ -59,6 +59,10 @@ async fn main() -> std::io::Result<()> {
                     .route("/urls", web::get().to(endpoints::urls::get_urls))
                     .route("/urls/{id}", web::delete().to(endpoints::urls::delete_url))
                     .route("/users", web::post().to(endpoints::users::create_user))
+                    .route(
+                        "/users/activate/{code}",
+                        web::patch().to(endpoints::users::activate),
+                    )
                     .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
             )
             .service(web::scope("").route("/health", web::get().to(endpoints::health::health)))

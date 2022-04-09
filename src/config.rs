@@ -16,7 +16,11 @@ pub struct EmailConfig {
 pub struct Config {
     // Application settings
     pub domain_name: String,
+    /// Account activation URL. Account activation email will use this link.
+    pub activation_url: String,
+    /// IP address to be used for HTTP Server.
     pub ip: String,
+    /// Port to be used for HTTP Server.
     pub port: u16,
 
     // Database settings
