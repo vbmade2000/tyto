@@ -6,7 +6,8 @@ use crate::user_management::TytoUserManager;
 use crate::Config;
 use actix_web::{
     http::StatusCode,
-    web::{self, HttpResponse},
+    web::{self},
+    HttpResponse,
 };
 use serde_json::json;
 use validator::validate_email;
