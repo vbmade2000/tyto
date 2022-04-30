@@ -1,7 +1,7 @@
 use crate::core::traits::{Notifier, UserManager};
 use crate::emailer::EmailNotifier;
 use crate::error::Error;
-use crate::types::{CreateUserRequest, Response, Status};
+use crate::types::{self, CreateUserRequest, Response, Status};
 use crate::user_management::TytoUserManager;
 use crate::Config;
 use actix_web::{
@@ -9,7 +9,7 @@ use actix_web::{
     web::{self},
     HttpResponse,
 };
-use serde_json::json;
+use serde_json::{self, json};
 use validator::validate_email;
 
 pub async fn create_user(
@@ -89,4 +89,18 @@ pub async fn activate(
     user_manager.activate(activation_code).await?;
 
     Ok(HttpResponse::build(StatusCode::OK).finish())
+}
+
+pub async fn get_all_users(
+    user_manager: web::Data<TytoUserManager>,
+) -> Result<HttpResponse, Error> {
+    let users = user_manager.get_all().await?;
+    // Prepare response
+    let response = types::Response {
+        status: types::Status::Success,
+        message: None,
+        data: serde_json::to_value(users).unwrap(),
+    };
+
+    Ok(HttpResponse::build(StatusCode::OK).json(response))
 }

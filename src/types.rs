@@ -47,7 +47,7 @@ pub struct CreateUserRequest {
     pub password: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct User {
     /// Unique ID of a user.
     pub id: Option<i64>,

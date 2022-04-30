@@ -63,6 +63,7 @@ async fn main() -> std::io::Result<()> {
                         "/users/activate/{code}",
                         web::patch().to(endpoints::users::activate),
                     )
+                    .route("/users", web::get().to(endpoints::users::get_all_users))
                     .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
             )
             .service(web::scope("").route("/health", web::get().to(endpoints::health::health)))
