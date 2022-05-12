@@ -1,6 +1,7 @@
 use crate::types;
 use actix_web::{http::StatusCode, HttpResponse, ResponseError};
 use snafu::prelude::*;
+use sqlx::migrate::MigrateError;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -23,6 +24,9 @@ pub enum Error {
 
     #[snafu(display("Account is already activated."))]
     AccountAlreadyActivated,
+
+    #[snafu(display("Database migration failed."))]
+    MigrationFailed { source: MigrateError },
 }
 
 impl ResponseError for Error {
@@ -33,6 +37,7 @@ impl ResponseError for Error {
             ConfigFile { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             ConfigRead { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             Email { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
+            MigrationFailed { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             InvalidEmail => StatusCode::BAD_REQUEST,
             AccountAlreadyActivated => StatusCode::CONFLICT,
         };
@@ -68,5 +73,11 @@ impl From<std::io::Error> for Error {
 impl From<lettre::transport::smtp::Error> for Error {
     fn from(source: lettre::transport::smtp::Error) -> Error {
         Error::Email { source }
+    }
+}
+
+impl From<MigrateError> for Error {
+    fn from(source: MigrateError) -> Error {
+        Error::MigrationFailed { source }
     }
 }
