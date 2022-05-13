@@ -19,4 +19,4 @@ lettre = { version = "0.10.0-rc.3", features = ["tokio1", "smtp-transport", "tok
 tokio = { version = "1", features = ["full"] }
 validator = { version = "0.14", features = ["derive"] }
 rand = "0.8.5"
-
+clap = { version = "3.1", features = ["derive"] }

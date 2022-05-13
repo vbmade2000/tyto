@@ -2,6 +2,7 @@ extern crate serde_json;
 
 use crate::config::Config;
 use actix_web::{web, App, HttpResponse, HttpServer};
+use clap::Parser;
 use error::Error;
 use sqlx::{self};
 use std::{fs, path::Path};
@@ -17,17 +18,29 @@ mod state;
 mod types;
 mod user_management;
 
+/// Tiny URL generator
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct TytoArgs {
+    /// Path to the tyto configuration file
+    #[clap(short, long, default_value_t = String::from("config.toml"))]
+    config: String,
+}
+
 #[actix_web::main]
 async fn main() -> Result<(), Error> {
-    // Read config file
-    // TODO: Read config file path from cmdline.
-    let config_file_path = Path::new("./config.toml");
-    let cfg = read_config(config_file_path).await?;
+    let args = TytoArgs::parse();
 
+    // Read config file path from command line.
+    let config_path_original = fs::canonicalize(args.config)?;
+    let config_file_path_absolute = Path::new(&config_path_original);
+    let cfg = read_config(config_file_path_absolute).await?;
+
+    // Database pool creation
     let db_connection_string = db::get_db_conn_string(cfg.clone()).await;
+    let db_connection_pool = db::get_database_connection(db_connection_string).await?;
 
     // Database migration
-    let db_connection_pool = db::get_database_connection(db_connection_string).await?;
     sqlx::migrate!("./migrations")
         .run(&db_connection_pool)
         .await?;
@@ -72,14 +85,6 @@ async fn main() -> Result<(), Error> {
 
 /// Reads configuration file and returns an instance of [Config] struct
 async fn read_config<P: AsRef<Path>>(config_file_path: P) -> Result<Config, Error> {
-    // TODO: Handle error properly
-    // let toml_text = fs::read_to_string(config_file_path)
-    //     .expect("Error in reading configuration from {config_file_path}");
-
-    // TODO: Handle error properly
-    // toml::from_str::<Config>(&toml_text)
-    //     .expect("Error in parsing configuration file {config_file_path}")
-
     let toml_text = fs::read_to_string(config_file_path)?;
 
     let c: Config = toml::from_str::<Config>(&toml_text)?;
