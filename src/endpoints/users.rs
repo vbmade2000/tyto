@@ -101,3 +101,13 @@ pub async fn get_all_users(
 
     Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
+
+/// Delete a user
+pub async fn delete_user(
+    user_id: web::Path<i64>,
+    user_manager: web::Data<TytoUserManager>,
+) -> Result<HttpResponse, Error> {
+    let user_id = user_id.into_inner();
+    user_manager.delete(user_id).await?;
+    Ok(HttpResponse::build(StatusCode::OK).finish())
+}

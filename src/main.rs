@@ -70,6 +70,10 @@ async fn main() -> Result<(), Error> {
                     .route("/urls/{id}", web::delete().to(endpoints::urls::delete_url))
                     .route("/users", web::post().to(endpoints::users::create_user))
                     .route(
+                        "/users/{id}",
+                        web::delete().to(endpoints::users::delete_user),
+                    )
+                    .route(
                         "/users/activate/{code}",
                         web::patch().to(endpoints::users::activate),
                     )

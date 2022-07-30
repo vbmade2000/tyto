@@ -30,6 +30,9 @@ pub enum Error {
 
     #[snafu(display("Database migration failed."))]
     MigrationFailed { source: MigrateError },
+
+    #[snafu(display("User not found."))]
+    UserNotFound,
 }
 
 impl ResponseError for Error {
@@ -44,6 +47,7 @@ impl ResponseError for Error {
             InvalidEmail => StatusCode::BAD_REQUEST,
             InvalidActivationToken => StatusCode::BAD_REQUEST,
             AccountAlreadyActivated => StatusCode::CONFLICT,
+            UserNotFound => StatusCode::NOT_FOUND,
         };
 
         let response = types::Response {

@@ -99,11 +99,18 @@ impl UserManager for TytoUserManager {
 
     /// Deletes a user with supplied id
     async fn delete(&self, user_id: i64) -> Result<(), error::Error> {
-        // TODO: Return error if user is already deleted.
+        println!("Delete called #######");
         let db_connection = &self.state.db_connection;
-        sqlx::query!(r#"UPDATE tyto.users set deleted=true where id=$1"#, user_id)
-            .execute(db_connection)
-            .await?;
+        let result = sqlx::query!(
+            r#"DELETE FROM tyto.users where id=$1 RETURNING id"#,
+            user_id
+        )
+        .fetch_optional(db_connection)
+        .await?;
+        if result.is_none() {
+            return Err(error::Error::UserNotFound);
+        }
+
         Ok(())
     }
 
