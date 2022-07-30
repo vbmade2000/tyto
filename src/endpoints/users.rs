@@ -30,6 +30,7 @@ pub async fn create_user(
     let activation_url = cfg.activation_url.to_owned();
 
     let (user_id, activation_code) = user_manager.create(new_user.into_inner()).await?;
+
     let output = json!({
         "id": user_id,
     });
@@ -76,15 +77,11 @@ pub async fn create_user(
     Ok(HttpResponse::build(StatusCode::CREATED).json(response))
 }
 
+/// Activates the user account if the provided activation code is valid.
 pub async fn activate(
     activation_code: web::Path<String>,
     user_manager: web::Data<TytoUserManager>,
 ) -> Result<HttpResponse, Error> {
-    /* TODO: Decide a length of the activation_code and return error
-     *  if code is more than decided length. Even better define length
-     *  in parameter if Actix allows. This can stop kind of DoS by stopping
-     *  calls before it hits the database.
-     */
     let activation_code = activation_code.into_inner();
     user_manager.activate(activation_code).await?;
 

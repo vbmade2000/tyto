@@ -9,6 +9,7 @@ use std::{fs, path::Path};
 use user_management::TytoUserManager;
 
 mod config;
+mod constants;
 mod core;
 mod db;
 mod emailer;

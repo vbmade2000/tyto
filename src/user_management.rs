@@ -1,3 +1,4 @@
+use crate::constants;
 use crate::error;
 use crate::types::CreateUserRequest;
 use actix_web::web;
@@ -108,6 +109,11 @@ impl UserManager for TytoUserManager {
 
     /// Activates a user with supplied id
     async fn activate(&self, activation_code: String) -> Result<(), error::Error> {
+        // Activation code must of of fixed and predefined length.
+        if activation_code.len() != constants::user::ACTIVATION_CODE_LENGTH {
+            return Err(error::Error::InvalidActivationToken);
+        }
+
         let db_connection = &self.state.db_connection;
         let user_record = sqlx::query!(
             r#"SELECT activated from tyto.users WHERE activation_code=$1"#,

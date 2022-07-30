@@ -25,6 +25,9 @@ pub enum Error {
     #[snafu(display("Account is already activated."))]
     AccountAlreadyActivated,
 
+    #[snafu(display("Invalid activation token."))]
+    InvalidActivationToken,
+
     #[snafu(display("Database migration failed."))]
     MigrationFailed { source: MigrateError },
 }
@@ -39,6 +42,7 @@ impl ResponseError for Error {
             Email { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             MigrationFailed { source: _ } => StatusCode::INTERNAL_SERVER_ERROR,
             InvalidEmail => StatusCode::BAD_REQUEST,
+            InvalidActivationToken => StatusCode::BAD_REQUEST,
             AccountAlreadyActivated => StatusCode::CONFLICT,
         };
 
