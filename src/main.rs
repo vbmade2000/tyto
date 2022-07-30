@@ -33,13 +33,13 @@ async fn main() -> Result<(), Error> {
     let args = TytoArgs::parse();
 
     // Read config file path from command line.
-    let config_path_original = fs::canonicalize(args.config)?;
-    let config_file_path_absolute = Path::new(&config_path_original);
-    let cfg = read_config(config_file_path_absolute).await?;
+    let config_path = fs::canonicalize(args.config)?;
+    println!("{:?}", &config_path);
+    let cfg = read_config(config_path).await?;
 
     // Database pool creation
-    let db_connection_string = db::get_db_conn_string(cfg.clone()).await;
-    let db_connection_pool = db::get_database_connection(db_connection_string).await?;
+    let db_connection_string = db::get_db_conn_string(&cfg).await;
+    let db_connection_pool = db::get_database_connection(&db_connection_string).await?;
 
     // Database migration
     sqlx::migrate!("./migrations")
@@ -48,8 +48,8 @@ async fn main() -> Result<(), Error> {
 
     let state = state::State::new(cfg.clone(), db_connection_pool);
     let shared_state = web::Data::new(state);
-    let user_manager = web::Data::new(TytoUserManager::new(shared_state.clone()));
-    let confg = web::Data::new(cfg.clone());
+    let shared_user_manager = web::Data::new(TytoUserManager::new(shared_state.clone()));
+    let shared_config = web::Data::new(cfg.clone());
 
     let ip_port = format!("{}:{}", cfg.ip, cfg.port);
     println!("Starting server at: {}", ip_port);
@@ -57,27 +57,30 @@ async fn main() -> Result<(), Error> {
     HttpServer::new(move || {
         App::new()
             .app_data(shared_state.clone())
-            .app_data(user_manager.clone())
-            .app_data(confg.clone())
+            .app_data(shared_user_manager.clone())
+            .app_data(shared_config.clone())
             .service(
                 web::scope("/api/v1")
-                    .route(
-                        "/urls/{id}",
-                        web::get().to(endpoints::urls::get_shortened_url),
+                    .service(
+                        web::scope("/urls")
+                            .route("", web::get().to(endpoints::urls::get_urls))
+                            .route("", web::post().to(endpoints::urls::post_url))
+                            .route("/{id}", web::delete().to(endpoints::urls::delete_url))
+                            .route("/{id}", web::get().to(endpoints::urls::get_shortened_url)),
                     )
-                    .route("/urls", web::post().to(endpoints::urls::post_url))
-                    .route("/urls", web::get().to(endpoints::urls::get_urls))
-                    .route("/urls/{id}", web::delete().to(endpoints::urls::delete_url))
-                    .route("/users", web::post().to(endpoints::users::create_user))
-                    .route(
-                        "/users/{id}",
-                        web::delete().to(endpoints::users::delete_user),
+                    .service(
+                        web::scope("/users")
+                            .route("", web::get().to(endpoints::users::get_all_users))
+                            .route("", web::post().to(endpoints::users::create_user))
+                            .route(
+                                "/users/{id}",
+                                web::delete().to(endpoints::users::delete_user),
+                            )
+                            .route(
+                                "/activate/{code}",
+                                web::patch().to(endpoints::users::activate),
+                            ),
                     )
-                    .route(
-                        "/users/activate/{code}",
-                        web::patch().to(endpoints::users::activate),
-                    )
-                    .route("/users", web::get().to(endpoints::users::get_all_users))
                     .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
             )
             .service(web::scope("").route("/health", web::get().to(endpoints::health::health)))

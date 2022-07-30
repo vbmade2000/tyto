@@ -5,7 +5,7 @@ use crate::error::Error;
 use sqlx::{self, postgres::PgPoolOptions, Pool, Postgres};
 
 /// Returns database connection strings using parameters received from config
-pub async fn get_db_conn_string(cfg: config::Config) -> String {
+pub async fn get_db_conn_string(cfg: &config::Config) -> String {
     // postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]
 
     // let database_urll = "postgres://tyto@localhost:5432/tyto";
@@ -22,11 +22,11 @@ pub async fn get_db_conn_string(cfg: config::Config) -> String {
     }
 }
 
-pub async fn get_database_connection(conn_string: String) -> Result<Pool<Postgres>, Error> {
+pub async fn get_database_connection(conn_string: &str) -> Result<Pool<Postgres>, Error> {
     let pool = PgPoolOptions::new()
         .max_connections(20)
         .max_lifetime(Duration::from_secs(30 * 60)) // 30 mins
-        .connect(&conn_string)
+        .connect(conn_string)
         .await?;
     Ok(pool)
 }
