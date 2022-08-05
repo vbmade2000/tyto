@@ -15,3 +15,8 @@ password = "testpassword"
 server = "smtp.test.com"
 sender = "sender@test.com"
 
+# Authentication related configurations 
+[auth]
+key = "123456781234" # 12 character Base64 encoded key to be used to generate token
+minutes = 1 # Minutes token remains valid for
+

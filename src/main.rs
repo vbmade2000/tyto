@@ -1,3 +1,4 @@
+extern crate base64;
 extern crate serde_json;
 
 use crate::config::Config;
@@ -18,6 +19,7 @@ mod error;
 mod state;
 mod types;
 mod user_management;
+pub mod utils;
 
 /// Tiny URL generator
 #[derive(Parser, Debug)]
@@ -72,14 +74,12 @@ async fn main() -> Result<(), Error> {
                         web::scope("/users")
                             .route("", web::get().to(endpoints::users::get_all_users))
                             .route("", web::post().to(endpoints::users::create_user))
-                            .route(
-                                "/users/{id}",
-                                web::delete().to(endpoints::users::delete_user),
-                            )
+                            .route("/{id}", web::delete().to(endpoints::users::delete_user))
                             .route(
                                 "/activate/{code}",
                                 web::patch().to(endpoints::users::activate),
-                            ),
+                            )
+                            .route("login", web::post().to(endpoints::users::login)),
                     )
                     .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
             )
@@ -96,5 +96,14 @@ async fn read_config<P: AsRef<Path>>(config_file_path: P) -> Result<Config, Erro
     let toml_text = fs::read_to_string(config_file_path)?;
 
     let c: Config = toml::from_str::<Config>(&toml_text)?;
+    validate_config(&c).await?;
     Ok(c)
+}
+
+/// Performs various validations on the values from config file.
+async fn validate_config(c: &Config) -> Result<(), Error> {
+    if c.auth.minutes < 1 || c.auth.minutes > 60 {
+        return Err(error::Error::InvalidTokenExpirationTime);
+    }
+    Ok(())
 }

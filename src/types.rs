@@ -64,3 +64,26 @@ pub struct User {
     /// Timestamp when user is last updated in database.
     pub updated_at: DateTime<Utc>,
 }
+
+#[derive(Deserialize, Serialize)]
+pub struct LoginRequest {
+    /// Username of a user
+    pub email: String,
+    /// Password of a user in plain text
+    pub password: String,
+}
+
+/// A structure to represent JWT Claim
+#[derive(Deserialize, Serialize)]
+pub struct UserClaim {
+    /// Email of a user
+    pub email: String,
+    /// Role of a user.
+    pub role: String,
+}
+
+#[derive(Deserialize, Serialize)]
+pub enum UserRole {
+    Normal,
+    Admin,
+}

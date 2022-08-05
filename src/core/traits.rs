@@ -1,4 +1,4 @@
-use crate::types::CreateUserRequest;
+use crate::types::{CreateUserRequest, LoginRequest};
 use crate::{error, types::User};
 use async_trait::async_trait;
 
@@ -9,6 +9,7 @@ pub trait UserManager {
     async fn get_all(&self) -> Result<Vec<User>, error::Error>;
     async fn delete(&self, user_id: i64) -> Result<(), error::Error>;
     async fn activate(&self, activation_code: String) -> Result<(), error::Error>;
+    async fn login(&self, login_request: LoginRequest) -> Result<String, error::Error>;
 }
 
 /// A trait that must be implemented by all the concrete types used to notify people

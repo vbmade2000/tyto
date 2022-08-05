@@ -1,7 +1,7 @@
 use crate::core::traits::{Notifier, UserManager};
 use crate::emailer::EmailNotifier;
 use crate::error::Error;
-use crate::types::{self, CreateUserRequest, Response, Status};
+use crate::types::{self, CreateUserRequest, LoginRequest, Response, Status};
 use crate::user_management::TytoUserManager;
 use crate::Config;
 use actix_web::{
@@ -110,4 +110,27 @@ pub async fn delete_user(
     let user_id = user_id.into_inner();
     user_manager.delete(user_id).await?;
     Ok(HttpResponse::build(StatusCode::OK).finish())
+}
+
+/// User login
+pub async fn login(
+    login_request: web::Json<LoginRequest>,
+    user_manager: web::Data<TytoUserManager>,
+) -> Result<HttpResponse, Error> {
+    // TODO: Return 404 code. Currently it returns 500 because it is difficult to have disctinction between different database errors.
+    let login_request = login_request.into_inner();
+    let token = user_manager.login(login_request).await?;
+
+    let data = json!({
+        "token": token,
+    });
+
+    // Prepare response
+    let response = types::Response {
+        status: types::Status::Success,
+        message: None,
+        data: serde_json::to_value(data).unwrap(),
+    };
+
+    Ok(HttpResponse::build(StatusCode::OK).json(response))
 }

@@ -1,11 +1,13 @@
 use crate::constants;
 use crate::error;
 use crate::types::CreateUserRequest;
+use crate::types::LoginRequest;
+use crate::types::UserClaim;
+use crate::{core::traits::UserManager, state::State, types::User};
 use actix_web::web;
 use async_trait::async_trait;
+use jwt_simple::prelude::*;
 use rand::Rng;
-
-use crate::{core::traits::UserManager, state::State, types::User};
 
 pub struct TytoUserManager {
     state: web::Data<State>,
@@ -26,7 +28,7 @@ fn generate_activation_code(email: &str) -> String {
 
 #[async_trait()]
 impl UserManager for TytoUserManager {
-    /// Creates a new userUnfortunatly,
+    /// Creates a new user unfortunately
     async fn create(&self, user: CreateUserRequest) -> Result<(i64, String), error::Error> {
         /*
             IDEA: Instead of storing activation timestamp in database, we can have a
@@ -143,6 +145,32 @@ impl UserManager for TytoUserManager {
         .await?;
 
         Ok(())
+    }
+
+    /// Logs in the user and returns a JWT on success
+    async fn login(&self, login_request: LoginRequest) -> Result<String, error::Error> {
+        let db_connection = &self.state.db_connection;
+        let _user_record = sqlx::query!(
+            r#"SELECT id, email, activated from tyto.users WHERE email=$1 and password=$2"#,
+            login_request.email,
+            login_request.password
+        )
+        .fetch_one(db_connection)
+        .await?;
+
+        // User claim that we'll encode in token.
+        let user_claim = UserClaim {
+            email: login_request.email.clone(),
+            role: "regular".to_string(),
+        };
+
+        // Generate JWT
+        let expires_in_minutes = self.state.config.auth.minutes;
+        let claim =
+            Claims::with_custom_claims(user_claim, Duration::from_mins(expires_in_minutes as u64));
+        let token = self.state.jwt_key.authenticate(claim)?;
+
+        Ok(token)
     }
 }
 

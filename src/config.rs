@@ -12,6 +12,16 @@ pub struct EmailConfig {
     pub server: String,
 }
 
+/// Authentication configuration
+#[derive(Clone, Debug, Deserialize)]
+pub struct AuthConfig {
+    /// Base64 encoded key to be used in JWT of length 12
+    pub key: String,
+    /// Minutes token remains valid for. Minimum 1 minute and maximun 60 minutes are allowed.
+    pub minutes: u8,
+}
+
+/// Tyto configuration
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     // Application settings
@@ -32,4 +42,7 @@ pub struct Config {
 
     // Email settings
     pub email: EmailConfig,
+
+    // Auth settings
+    pub auth: AuthConfig,
 }
