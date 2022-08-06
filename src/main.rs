@@ -79,7 +79,8 @@ async fn main() -> Result<(), Error> {
                                 "/activate/{code}",
                                 web::patch().to(endpoints::users::activate),
                             )
-                            .route("login", web::post().to(endpoints::users::login)),
+                            .route("login", web::post().to(endpoints::users::login))
+                            .route("logout", web::post().to(endpoints::users::logout)),
                     )
                     .service(web::scope("admin").route("", web::get().to(HttpResponse::Ok))),
             )

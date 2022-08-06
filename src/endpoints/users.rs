@@ -4,6 +4,8 @@ use crate::error::Error;
 use crate::types::{self, CreateUserRequest, LoginRequest, Response, Status};
 use crate::user_management::TytoUserManager;
 use crate::Config;
+use actix_web::http::header::HeaderValue;
+use actix_web::HttpRequest;
 use actix_web::{
     http::StatusCode,
     web::{self},
@@ -120,6 +122,39 @@ pub async fn login(
     // TODO: Return 404 code. Currently it returns 500 because it is difficult to have disctinction between different database errors.
     let login_request = login_request.into_inner();
     let token = user_manager.login(login_request).await?;
+
+    let data = json!({
+        "token": token,
+    });
+
+    // Prepare response
+    let response = types::Response {
+        status: types::Status::Success,
+        message: None,
+        data: serde_json::to_value(data).unwrap(),
+    };
+
+    Ok(HttpResponse::build(StatusCode::OK).json(response))
+}
+
+// User logout
+pub async fn logout(
+    req: HttpRequest,
+    user_manager: web::Data<TytoUserManager>,
+) -> Result<HttpResponse, Error> {
+    // We can unwrap here as we already know what we input here.
+    let default_header = &HeaderValue::from_str("").unwrap();
+
+    // Extract Bearer token if there is any
+    let token = req
+        .headers()
+        .get("Authorization")
+        .unwrap_or(default_header)
+        .to_str()
+        .unwrap();
+
+    // Generate almost expired token
+    let token = user_manager.logout(token.to_string()).await?;
 
     let data = json!({
         "token": token,

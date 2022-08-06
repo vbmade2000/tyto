@@ -3,6 +3,7 @@ use crate::error;
 use crate::types::CreateUserRequest;
 use crate::types::LoginRequest;
 use crate::types::UserClaim;
+use crate::utils::validate_token;
 use crate::{core::traits::UserManager, state::State, types::User};
 use actix_web::web;
 use async_trait::async_trait;
@@ -170,6 +171,20 @@ impl UserManager for TytoUserManager {
             Claims::with_custom_claims(user_claim, Duration::from_mins(expires_in_minutes as u64));
         let token = self.state.jwt_key.authenticate(claim)?;
 
+        Ok(token)
+    }
+
+    /// Allows user to logout.
+    /// Practically the logout is not possible. Client can just remove existing token from the
+    /// local storage. Still we return new token with that belongs to no user or role. Also, that
+    /// token would expire in 2 milliseconds.
+    async fn logout(&self, token: String) -> Result<String, error::Error> {
+        let mut existing_claim = validate_token(&token, &self.state.jwt_key).await?;
+        existing_claim.email = "".to_string();
+        existing_claim.role = "".to_string();
+
+        let claim = Claims::with_custom_claims(existing_claim, Duration::from_millis(2 as u64));
+        let token = self.state.jwt_key.authenticate(claim)?;
         Ok(token)
     }
 }
