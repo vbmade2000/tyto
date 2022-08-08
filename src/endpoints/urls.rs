@@ -9,8 +9,7 @@ use actix_web::{
 use serde::Serialize;
 use serde_json::{self, json};
 
-/// Web handler - /urls/{id} - DELETE
-/// Deletes a URL record with {id}
+/// Web handler - Deletes a URL record associated with {id}
 pub async fn delete_url(id: Path<i64>, state: web::Data<State>) -> Result<HttpResponse, Error> {
     let state = state.clone();
     let db_connection = &state.db_connection;
@@ -29,8 +28,7 @@ pub async fn delete_url(id: Path<i64>, state: web::Data<State>) -> Result<HttpRe
     Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
 
-/// Web handler - /urls/{id}- GET
-/// Returns a shortened URL record for a supplied {id}
+/// Web handler - Returns a shortened URL record for a supplied {id}
 pub async fn get_shortened_url(
     id: Path<i64>,
     state: web::Data<State>,
@@ -65,8 +63,7 @@ pub async fn get_shortened_url(
     Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
 
-/// Web handler - /urls- POST
-/// Creates a new shortened URL for supplied longer URL
+/// Web handler - Creates a new shortened URL for a supplied longer URL
 pub async fn post_url(
     input: web::Json<CreateURLRequest>,
     state: web::Data<State>,
@@ -111,8 +108,7 @@ pub async fn shorten_url_md5(long_url: String) -> String {
     format!("{:?}", md5::compute(long_url))
 }
 
-/// Web handler - /urls - GET
-/// Returns all the URL records from database
+/// Web handler - Returns all the URL records from database
 pub async fn get_urls(state: web::Data<State>) -> Result<HttpResponse, Error> {
     let state = state.clone();
     let db_connection = &state.db_connection;

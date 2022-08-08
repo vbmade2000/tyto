@@ -1,5 +1,6 @@
 use serde::Deserialize;
 
+/// Email configuration
 #[derive(Clone, Debug, Deserialize)]
 pub struct EmailConfig {
     /// Sender email address
@@ -25,6 +26,7 @@ pub struct AuthConfig {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     // Application settings
+    /// Domain name to be used in generated tiny urls
     pub domain_name: String,
     /// Account activation URL. Account activation email will use this link.
     pub activation_url: String,
@@ -34,15 +36,20 @@ pub struct Config {
     pub port: u16,
 
     // Database settings
+    /// Database host
     pub db_host: String,
+    /// Database name
     pub db_name: String,
+    /// Database port
     pub db_port: u16,
+    /// Username for the database connection
     pub db_user: String,
+    /// Password for the database connection
     pub db_password: String,
 
-    // Email settings
+    /// Email settings
     pub email: EmailConfig,
 
-    // Auth settings
+    /// Auth settings
     pub auth: AuthConfig,
 }

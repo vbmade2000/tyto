@@ -14,6 +14,10 @@ pub struct TytoUserManager {
     state: web::Data<State>,
 }
 
+/// Generates activation code.
+/// How does it work:
+/// It generates a random number in the range of u32, concatentes it with md5(email) and returns the
+/// resultant string.
 fn generate_activation_code(email: &str) -> String {
     // Generate random number to use in activation code to make it difficult to predict/re-create.
     let mut rng = rand::thread_rng();
@@ -29,7 +33,11 @@ fn generate_activation_code(email: &str) -> String {
 
 #[async_trait()]
 impl UserManager for TytoUserManager {
-    /// Creates a new user unfortunately
+    /// Creates a new user.
+    /// How does it work:
+    /// At the moment is takes email and password of a user and stores in database. It stores password in
+    /// plain text which is indeed a bad practice and soon it will be changed to store securely. It then
+    /// generates activation code and returns it.
     async fn create(&self, user: CreateUserRequest) -> Result<(i64, String), error::Error> {
         /*
             IDEA: Instead of storing activation timestamp in database, we can have a
@@ -56,9 +64,12 @@ impl UserManager for TytoUserManager {
         Ok((rec.id, activation_code))
     }
 
-    /// Returns an instance of [User] for a user with supplied id
+    /// Returns an instance of a [User] for a user with supplied id.
+    /// How does it work:
+    /// It simply retrieves the record of a supplied user id and returns instance of [User] structure
+    /// populated with record values.
     async fn get(&self, user_id: i64) -> Result<User, error::Error> {
-        // TODO: Return error if user is deleted.
+        // TODO: Return error if a user is deleted.
         let db_connection = &self.state.db_connection;
         let user = sqlx::query!(r#"SELECT * FROM tyto.users WHERE id=$1"#, user_id)
             .fetch_one(db_connection)
@@ -75,10 +86,11 @@ impl UserManager for TytoUserManager {
         })
     }
 
-    /// Returns all the users in database. At the moment, it doesn't differentiate between
-    /// live users and deleted users.
+    /// Returns all the users in database.
+    /// How does it work?
+    /// It simply retrieves all the user records from the database and returns a list of [User]
+    /// instances
     async fn get_all(&self) -> Result<Vec<User>, error::Error> {
-        // TODO: Add support to get only live users. Currently it returns all the users.
         let db_connection = &self.state.db_connection;
         let found_users = sqlx::query!(r#"SELECT * FROM tyto.users ORDER BY created_at ASC"#)
             .fetch_all(db_connection)
@@ -100,9 +112,10 @@ impl UserManager for TytoUserManager {
         Ok(users)
     }
 
-    /// Deletes a user with supplied id
+    /// Deletes a user with supplied id.
+    /// How does it work:
+    /// It simply deletes a user from database.
     async fn delete(&self, user_id: i64) -> Result<(), error::Error> {
-        println!("Delete called #######");
         let db_connection = &self.state.db_connection;
         let result = sqlx::query!(
             r#"DELETE FROM tyto.users where id=$1 RETURNING id"#,
@@ -117,13 +130,18 @@ impl UserManager for TytoUserManager {
         Ok(())
     }
 
-    /// Activates a user with supplied id
+    /// Activates a user with supplied id.
+    /// How does it work:
+    /// 1. Check if length is as expected. Return error if not.
+    /// 2. Check if user is already activated. Return error if not.
+    /// 3. Activate the user.
     async fn activate(&self, activation_code: String) -> Result<(), error::Error> {
-        // Activation code must of of fixed and predefined length.
+        // Activation code must be of fixed and predefined length.
         if activation_code.len() != constants::user::ACTIVATION_CODE_LENGTH {
             return Err(error::Error::InvalidActivationToken);
         }
 
+        // Fetch user record
         let db_connection = &self.state.db_connection;
         let user_record = sqlx::query!(
             r#"SELECT activated from tyto.users WHERE activation_code=$1"#,
@@ -148,7 +166,10 @@ impl UserManager for TytoUserManager {
         Ok(())
     }
 
-    /// Logs in the user and returns a JWT on success
+    /// Logs in the user and returns a JWT on success.
+    /// 1. Fetch user record for a matching credentials. Return error if no records found.
+    /// 2. Create user claim to be encoded in JWT.
+    /// 3. Generate JWT and return it.
     async fn login(&self, login_request: LoginRequest) -> Result<String, error::Error> {
         let db_connection = &self.state.db_connection;
         let _user_record = sqlx::query!(
@@ -183,7 +204,7 @@ impl UserManager for TytoUserManager {
         existing_claim.email = "".to_string();
         existing_claim.role = "".to_string();
 
-        let claim = Claims::with_custom_claims(existing_claim, Duration::from_millis(2 as u64));
+        let claim = Claims::with_custom_claims(existing_claim, Duration::from_millis(2_u64));
         let token = self.state.jwt_key.authenticate(claim)?;
         Ok(token)
     }

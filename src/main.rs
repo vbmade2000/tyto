@@ -36,7 +36,6 @@ async fn main() -> Result<(), Error> {
 
     // Read config file path from command line.
     let config_path = fs::canonicalize(args.config)?;
-    println!("{:?}", &config_path);
     let cfg = read_config(config_path).await?;
 
     // Database pool creation
@@ -48,6 +47,7 @@ async fn main() -> Result<(), Error> {
         .run(&db_connection_pool)
         .await?;
 
+    // Prepare data to be shared. web::Data is Arc, so we can safely share and send it across workers.
     let state = state::State::new(cfg.clone(), db_connection_pool);
     let shared_state = web::Data::new(state);
     let shared_user_manager = web::Data::new(TytoUserManager::new(shared_state.clone()));
@@ -92,7 +92,8 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 
-/// Reads configuration file and returns an instance of [Config] struct
+/// Reads configuration file and returns an instance of [Config] struct. It validates the config
+/// too with the help of [validate_config].
 async fn read_config<P: AsRef<Path>>(config_file_path: P) -> Result<Config, Error> {
     let toml_text = fs::read_to_string(config_file_path)?;
 
@@ -101,7 +102,8 @@ async fn read_config<P: AsRef<Path>>(config_file_path: P) -> Result<Config, Erro
     Ok(c)
 }
 
-/// Performs various validations on the values from config file.
+/// Performs various validations on the values from config file. Currently it validates the token
+/// expiration time which must be between 1 and 60 minutes including.
 async fn validate_config(c: &Config) -> Result<(), Error> {
     if c.auth.minutes < 1 || c.auth.minutes > 60 {
         return Err(error::Error::InvalidTokenExpirationTime);

@@ -9,7 +9,7 @@ Tyto is in very early stage of development. Many nice features are to be added.
 
 # Compile
 ```
-$ export DATABASE_URL="postgres://tyto@localhost/tyto
+$ export DATABASE_URL="postgres://tyto@localhost/tyto"
 $ cargo build
 ```
 

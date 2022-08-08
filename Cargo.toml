@@ -6,20 +6,40 @@ authors = ["Malhar Vora <vbmade2000@gmail.com>"]
 
 
 [dependencies]
+
+# web
 actix-web="4.0.0-beta.10"
-md5="0.7.0"
-serde = "1.0.136"
-toml="0.5.8"
-sqlx = { version = "0.5", features = [ "runtime-tokio-native-tls" , "postgres", "json", "time", "chrono", "migrate" ] }
-snafu = "0.7.0"
-serde_json = "1.0.79"
-chrono = { version = "0.4", features = ["serde"] }
-async-trait = "0.1.52"
-lettre = { version = "0.10.0-rc.3", features = ["tokio1", "smtp-transport", "tokio1-native-tls", "hostname", "pool", "builder"]}
-tokio = { version = "1", features = ["full"] }
-validator = { version = "0.14", features = ["derive"] }
-rand = "0.8.5"
-clap = { version = "3.1", features = ["derive"] }
 jwt-simple = "0.11.0"
+
+# serialization
+serde = "1.0.136"
+serde_json = "1.0.79"
+
+# configuration
+toml="0.5.8"
+
+# cryptography and random number generation
+md5="0.7.0"
 base64 = "0.13.0"
+rand = "0.8.5"
+
+# database
+sqlx = { version = "0.5", features = [ "runtime-tokio-native-tls" , "postgres", "json", "time", "chrono", "migrate" ] }
+
+# async
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1.52"
+
+# email
+lettre = { version = "0.10.0-rc.3", features = ["tokio1", "smtp-transport", "tokio1-native-tls", "hostname", "pool", "builder"]}
+validator = { version = "0.14", features = ["derive"] }
+
+# logging
+snafu = "0.7.0"
+
+# datetime
+chrono = { version = "0.4", features = ["serde"] }
+
+# commandline-handling
+clap = { version = "3.1", features = ["derive"] }
 

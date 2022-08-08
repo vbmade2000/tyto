@@ -14,6 +14,13 @@ use actix_web::{
 use serde_json::{self, json};
 use validator::validate_email;
 
+/// Web handler - Creates a new user
+/// How does it work:
+/// 1. Validate email
+/// 2. Read configuration
+/// 3. Prepare body for activation email
+/// 4. Send an email
+/// 5. Prepare and send response
 pub async fn create_user(
     new_user: web::Json<CreateUserRequest>,
     user_manager: web::Data<TytoUserManager>,
@@ -79,7 +86,7 @@ pub async fn create_user(
     Ok(HttpResponse::build(StatusCode::CREATED).json(response))
 }
 
-/// Activates the user account if the provided activation code is valid.
+/// Web handler - Activates the user account if the valid activation code is provided.
 pub async fn activate(
     activation_code: web::Path<String>,
     user_manager: web::Data<TytoUserManager>,
@@ -90,6 +97,7 @@ pub async fn activate(
     Ok(HttpResponse::build(StatusCode::OK).finish())
 }
 
+/// Web handler - Retrieves all the user from database.
 pub async fn get_all_users(
     user_manager: web::Data<TytoUserManager>,
 ) -> Result<HttpResponse, Error> {
@@ -104,7 +112,7 @@ pub async fn get_all_users(
     Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
 
-/// Delete a user
+/// Web handler - Delete a user
 pub async fn delete_user(
     user_id: web::Path<i64>,
     user_manager: web::Data<TytoUserManager>,
@@ -114,7 +122,7 @@ pub async fn delete_user(
     Ok(HttpResponse::build(StatusCode::OK).finish())
 }
 
-/// User login
+/// Web handler - User login
 pub async fn login(
     login_request: web::Json<LoginRequest>,
     user_manager: web::Data<TytoUserManager>,
@@ -137,7 +145,12 @@ pub async fn login(
     Ok(HttpResponse::build(StatusCode::OK).json(response))
 }
 
-// User logout
+/// Web handler - User logout
+/// How does it work:
+/// 1. Declare variable to be used as a default value for Auth header
+/// 2. Extract Authorization header
+/// 3. Call actuall logout method
+/// 4. Prepare and send response
 pub async fn logout(
     req: HttpRequest,
     user_manager: web::Data<TytoUserManager>,
